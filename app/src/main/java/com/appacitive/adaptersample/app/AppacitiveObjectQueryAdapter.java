@@ -2,9 +2,11 @@ package com.appacitive.adaptersample.app;
 
 import android.content.Context;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -12,6 +14,7 @@ import com.appacitive.core.AppacitiveObject;
 import com.appacitive.core.model.Callback;
 import com.appacitive.core.model.PagedList;
 import com.appacitive.core.query.AppacitiveQuery;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,24 +24,19 @@ import java.util.List;
  * Created by sathley.
  */
 public class AppacitiveObjectQueryAdapter extends BaseAdapter {
-
     public Context getContext() {
         return mContext;
     }
-
     public List<AppacitiveObject> getObjects() {
         return mObjects;
     }
-
     private Context mContext;
     private String mType;
     private List<String> mFields;
     private long mPageNumber = 1;    //  default
     private long mPageSize = 10;     //  default
     private long mTotalRecords = 0;  //  for now
-
     final private List<AppacitiveObject> mObjects = new ArrayList<AppacitiveObject>();
-
     private AppacitiveQuery query = null;
 
     public AppacitiveObjectQueryAdapter(Context context, String type, List<String> fields, AppacitiveQuery query) {
@@ -92,9 +90,22 @@ public class AppacitiveObjectQueryAdapter extends BaseAdapter {
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
-        TextView textView = new TextView(getContext());
-        textView.setText(getItem(i).getPropertyAsString("name"));
-        return textView;
+        LayoutInflater li = LayoutInflater.from(getContext());
+        View playerItem = li.inflate(R.layout.player_item, null, false);
+        ImageView photoView = (ImageView) playerItem.findViewById(R.id.imageView);
+        TextView nameView = (TextView) playerItem.findViewById(R.id.name);
+
+        AppacitiveObject player = getItem(i);
+        String playerName = player.getPropertyAsString("name");
+        String photoUrl = player.getPropertyAsString("photo_url");
+
+        nameView.setText(playerName);
+        Picasso.with(getContext())
+                .load(photoUrl)
+                .placeholder(R.drawable.placeholder)
+                .into(photoView);
+
+        return playerItem;
     }
 
     @Override
@@ -119,12 +130,11 @@ public class AppacitiveObjectQueryAdapter extends BaseAdapter {
     public void getCurrentPage() {
         this.query.pageNumber = this.mPageNumber;
         this.query.pageSize = this.mPageSize;
-
         //  Fetch objects from appacitive as requested by the query.
         AppacitiveObject.findInBackground(this.mType, this.query, this.mFields, new Callback<PagedList<AppacitiveObject>>() {
             @Override
             public void success(PagedList<AppacitiveObject> result) {
-                //  Set the totalrecords field of the adapter for paging help.
+                //  Set the totalrecords field of the adapter for paging help.getItem
                 mTotalRecords = result.pagingInfo.totalRecords;
                 //  Clear out the existing objects from adapter and add the new ones.
                 mObjects.clear();
@@ -134,7 +144,6 @@ public class AppacitiveObjectQueryAdapter extends BaseAdapter {
                 //  Paging utility
                 Toast.makeText(getContext(), String.format("Showing page " + mPageNumber + " of " + (int) Math.ceil((double) mTotalRecords / (double) mPageSize) + "."), Toast.LENGTH_LONG).show();
             }
-
             @Override
             public void failure(PagedList<AppacitiveObject> result, Exception e) {
                 Log.e("APPACITIVE", e.getMessage());

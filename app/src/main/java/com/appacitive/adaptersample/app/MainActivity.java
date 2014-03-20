@@ -9,7 +9,6 @@ import android.widget.ListView;
 import com.appacitive.android.AppacitiveContext;
 import com.appacitive.core.model.Environment;
 import com.appacitive.core.query.AppacitiveQuery;
-import com.appacitive.core.query.PropertyFilter;
 
 
 public class MainActivity extends Activity {
@@ -22,7 +21,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //  Initialize appacitive context.
-        AppacitiveContext.initialize("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", Environment.sandbox, this);
+        AppacitiveContext.initialize("up8+oWrzVTVIxl9ZiKtyamVKgBnV5xvmV95u1mEVRrM=", Environment.sandbox, this);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -34,7 +33,9 @@ public class MainActivity extends Activity {
         //  In the listview, we will show all objects of schema type 'player' whose team is 'India'.
         //  Create the query accordingly
         AppacitiveQuery query = new AppacitiveQuery();
-        query.filter = new PropertyFilter("team").isEqualTo("India");
+        query.pageNumber = 1;
+        query.pageSize = 5;
+//        query.filter = new PropertyFilter("team").isEqualTo("India");
 
         //  Tell the adapter to fire this query on the 'player' schema type.
         mAdapter = new AppacitiveObjectQueryAdapter(this, "player", null, query);
