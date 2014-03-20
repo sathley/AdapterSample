@@ -153,8 +153,9 @@ The `getNextPage()` and `getPreviousPage()` rely on this method internally.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+## Screenshot
 
-
+![screenshot](https://raw.github.com/sathley/AdapterSample/master/screenshot.png)
 
 This example depends on [appacitive android sdk][2] and the amazing image downloading and caching library [picasso][1] by Square.
 
