@@ -1,5 +1,5 @@
-AdapterSample
-=============
+AppacitiveQueryAdapter
+======================
 
 A sample android app to demonstrate a pattern of using __AppacitiveQueryAdapter__ with _ListView_ or _GridView_.
 
