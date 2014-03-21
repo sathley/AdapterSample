@@ -3,7 +3,6 @@ AdapterSample
 
 A sample android app to demonstrate a pattern of using __AppacitiveQueryAdapter__ with _ListView_ or _GridView_.
 
-
 This example demonstrates how you can create a _AppacitiveObjectQueryAdapter_ by extending the _BaseAdapter_ to feed a _ListView_ or _GridView_ with [appacitive][4] entities like objects, connections, users or devices.
 
 [4]: <http://appacitive.com/>
@@ -61,12 +60,9 @@ public boolean isEmpty() { return getCount() == 0; }
 ...
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-
 Some additional helper methods are provided like `clear()`, `addItem(AppacitiveObject player)`, 
 
 `addAll(Collection<AppacitiveObject> playerCollection)`, `removeObject(AppacitiveObject player) `etc. to easily manipulate the data recieved from appacitive.
-
 
 The `getCurrentPage()` fetches the players from _appacitive_ and notifies the ListView when new data is available by calling the `notifyDataSetChanged()`. The `getNextPage()` and `getPreviousPage()` rely on this method internally.
 
