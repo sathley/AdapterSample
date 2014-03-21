@@ -27,16 +27,18 @@ public class AppacitiveObjectQueryAdapter extends BaseAdapter {
     public Context getContext() {
         return mContext;
     }
+
     public List<AppacitiveObject> getObjects() {
         return mObjects;
     }
+
     private Context mContext;
-    private String mType;
-    private List<String> mFields;
+    private String mType;            //  schema type
+    private List<String> mFields;    //  fields to fetch from the server. use this to reduce network payloads
     private long mPageNumber = 1;    //  default
     private long mPageSize = 10;     //  default
     private long mTotalRecords = 0;  //  for now
-    final private List<AppacitiveObject> mObjects = new ArrayList<AppacitiveObject>();
+    final private List<AppacitiveObject> mObjects = new ArrayList<AppacitiveObject>();  //  the data source for this adapter
     private AppacitiveQuery query = null;
 
     public AppacitiveObjectQueryAdapter(Context context, String type, List<String> fields, AppacitiveQuery query) {
@@ -49,6 +51,7 @@ public class AppacitiveObjectQueryAdapter extends BaseAdapter {
         if (query.pageSize > 0)
             this.mPageSize = query.pageSize;
 
+        //  Populate the data source
         getCurrentPage();
     }
 
@@ -90,6 +93,7 @@ public class AppacitiveObjectQueryAdapter extends BaseAdapter {
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
+        //  put your app specific implementation here
         LayoutInflater li = LayoutInflater.from(getContext());
         View playerItem = li.inflate(R.layout.player_item, null, false);
         ImageView photoView = (ImageView) playerItem.findViewById(R.id.imageView);
@@ -134,14 +138,14 @@ public class AppacitiveObjectQueryAdapter extends BaseAdapter {
         AppacitiveObject.findInBackground(this.mType, this.query, this.mFields, new Callback<PagedList<AppacitiveObject>>() {
             @Override
             public void success(PagedList<AppacitiveObject> result) {
-                //  Set the totalrecords field of the adapter for paging help.getItem
+                //  Set the totalrecords field of the adapter for paging help
                 mTotalRecords = result.pagingInfo.totalRecords;
-                //  Clear out the existing objects from adapter and add the new ones.
+                //  Clear out the existing objects from adapter and add the new objects.
                 mObjects.clear();
                 mObjects.addAll(result.results);
                 //  Notify listeners there is a fresh list of objects.
                 notifyDataSetChanged();
-                //  Paging utility
+                //  Paging utility toast
                 Toast.makeText(getContext(), String.format("Showing page " + mPageNumber + " of " + (int) Math.ceil((double) mTotalRecords / (double) mPageSize) + "."), Toast.LENGTH_LONG).show();
             }
             @Override
@@ -153,7 +157,7 @@ public class AppacitiveObjectQueryAdapter extends BaseAdapter {
 
     public void getNextPage() {
         if (mPageNumber == (int) Math.ceil((double) mTotalRecords / (double) mPageSize)) {
-            Toast.makeText(getContext(), "Can't go any more further!", Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "Can't go further forward!", Toast.LENGTH_LONG).show();
             return;
         }
         this.mPageNumber++;

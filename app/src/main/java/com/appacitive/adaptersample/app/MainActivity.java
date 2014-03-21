@@ -9,40 +9,42 @@ import android.widget.ListView;
 import com.appacitive.android.AppacitiveContext;
 import com.appacitive.core.model.Environment;
 import com.appacitive.core.query.AppacitiveQuery;
+import com.appacitive.core.query.PropertyFilter;
+
+import java.util.List;
 
 
 public class MainActivity extends Activity {
 
     ListView mListView;
     AppacitiveObjectQueryAdapter mAdapter;
-    Button mNext;
-    Button mPrevious;
+    Button mNextButton;
+    Button mPreviousButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //  Initialize appacitive context.
-        AppacitiveContext.initialize("up8+oWrzVTVIxl9ZiKtyamVKgBnV5xvmV95u1mEVRrM=", Environment.sandbox, this);
-
+        AppacitiveContext.initialize("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", Environment.sandbox, this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         mListView = (ListView) findViewById(R.id.listView);
-        mNext = (Button) findViewById(R.id.next);
-        mPrevious = (Button) findViewById(R.id.previous);
+        mNextButton = (Button) findViewById(R.id.next);
+        mPreviousButton = (Button) findViewById(R.id.previous);
 
         //  In the listview, we will show all objects of schema type 'player' whose team is 'India'.
         //  Create the query accordingly
         AppacitiveQuery query = new AppacitiveQuery();
         query.pageNumber = 1;
         query.pageSize = 5;
-//        query.filter = new PropertyFilter("team").isEqualTo("India");
-
+        query.filter = new PropertyFilter("team").isEqualTo("India");
+        List<String> fields = null;
         //  Tell the adapter to fire this query on the 'player' schema type.
-        mAdapter = new AppacitiveObjectQueryAdapter(this, "player", null, query);
+        mAdapter = new AppacitiveObjectQueryAdapter(this, "player", fields, query);
         mListView.setAdapter(mAdapter);
 
         //  attach next page button listener
-        mNext.setOnClickListener(new View.OnClickListener() {
+        mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mAdapter.getNextPage();
@@ -50,7 +52,7 @@ public class MainActivity extends Activity {
         });
 
         //  attach previous page button listener
-        mPrevious.setOnClickListener(new View.OnClickListener() {
+        mPreviousButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mAdapter.getPreviousPage();
