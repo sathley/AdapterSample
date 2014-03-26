@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Appacitive QueryAdapter Sample by sathley</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Appacitive QueryAdapter Sample</h1>
+          <h2>A sample android app to demonstrate a pattern of using AppacitiveQueryAdapter for Listview or Gridview.</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/sathley/AppacitiveQueryAdapterSample/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/sathley/AppacitiveQueryAdapterSample/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/sathley/AppacitiveQueryAdapterSample" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>
+<a name="appacitivequeryadapter" class="anchor" href="#appacitivequeryadapter"><span class="octicon octicon-link"></span></a>AppacitiveQueryAdapter</h1>
+
+<p>A sample android app to demonstrate a pattern of using <strong>AppacitiveQueryAdapter</strong> with <em>ListView</em> or <em>GridView</em>.</p>
+
+<p>This example demonstrates how you can create a <em>AppacitiveObjectQueryAdapter</em> by extending the <em>BaseAdapter</em> to feed a <em>ListView</em> or <em>GridView</em> with <a href="http://appacitive.com/">appacitive</a> entities like objects, connections, users or devices.</p>
+
+<p>This example app creates an adapter for cricket players which are objects of schema type <em>player</em>.</p>
+
+<p>To know more about schema types on appacitive, check <a href="http://help.appacitive.com/v1.0/index.html#android/data_objects">this</a> out.</p>
+
+<pre><code>public class AppacitiveObjectQueryAdapter extends BaseAdapter { 
+
+    private Context mContext;
+    private String mType;            //  schema type
+    private List&lt;String&gt; mFields;    //  fields to fetch from the server. use this to reduce network payloads
+    private long mPageNumber = 1;    //  default
+    private long mPageSize = 10;     //  default
+    private long mTotalRecords = 0;  //  for now
+    final private List&lt;AppacitiveObject&gt; mObjects = new ArrayList&lt;AppacitiveObject&gt;();  //  the data source for this adapter
+    private AppacitiveQuery query = null;
+
+    ...
+</code></pre>
+
+<p>The constructor sets the internal fields of the adapter.</p>
+
+<pre><code>public AppacitiveObjectQueryAdapter(Context context, String type, ListString fields, AppacitiveQuery query) { 
+    this.mContext = context; 
+    this.mType = type; 
+    this.mFields = fields; 
+    this.query = query; 
+    if (query.pageNumber &gt; 0) 
+        this.mPageNumber = query.pageNumber; 
+    if (query.pageSize &gt; 0) this.mPageSize = query.pageSize;
+
+    //  Populate the data source
+    getCurrentPage(); 
+}
+</code></pre>
+
+<p>And now we have overridden <code>BaseAdapters</code>methods like <code>getItem(int position)</code>, <code>getCount()</code>, <code>isEmpty()</code> and <code>getItemId(int position)</code> for them to use the internal array <code>mObjects</code> as the data source.</p>
+
+<pre><code>@Override 
+public AppacitiveObject getItem(int i) { return this.mObjects.get(i); }
+
+@Override 
+public int getCount() { return mObjects.size(); }
+
+@Override 
+public boolean isEmpty() { return getCount() == 0; }
+
+...
+</code></pre>
+
+<p>Some additional helper methods are provided like <code>clear()</code>, <code>addItem(AppacitiveObject player)</code>, </p>
+
+<p><code>addAll(Collection&lt;AppacitiveObject&gt; playerCollection)</code>, <code>removeObject(AppacitiveObject player)</code>etc. to easily manipulate the data recieved from appacitive.</p>
+
+<p>The <code>getCurrentPage()</code> fetches the players from <em>appacitive</em> and notifies the ListView when new data is available by calling the <code>notifyDataSetChanged()</code>. The <code>getNextPage()</code> and <code>getPreviousPage()</code> rely on this method internally.</p>
+
+<pre><code>    public void getCurrentPage() {
+        this.query.pageNumber = this.mPageNumber;
+        this.query.pageSize = this.mPageSize;
+        //  Fetch objects from appacitive as requested by the query.
+        AppacitiveObject.findInBackground(this.mType, this.query, this.mFields, new Callback&lt;PagedList&lt;AppacitiveObject&gt;&gt;() {
+            @Override
+            public void success(PagedList&lt;AppacitiveObject&gt; result) {
+
+                //  Set the totalrecords field of the adapter for paging help
+                mTotalRecords = result.pagingInfo.totalRecords;
+
+                //  Clear out the existing objects from adapter and add the new ones.
+                mObjects.clear();
+                mObjects.addAll(result.results);
+
+                //  Notify listeners there is a fresh list of objects.
+                notifyDataSetChanged();
+
+                //  Paging utility toast
+                Toast.makeText(getContext(), String.format("Showing page " + mPageNumber + " of " + (int) Math.ceil((double) mTotalRecords / (double) mPageSize) + "."), Toast.LENGTH_LONG).show();
+            }
+            @Override
+            public void failure(PagedList&lt;AppacitiveObject&gt; result, Exception e) 
+            {
+                Log.e("APPACITIVE", e.getMessage());
+            }
+        });
+    }
+</code></pre>
+
+<p>And now you can override <code>getView()</code> to return a view of your choice.</p>
+
+<p>In the example, we are returning an <em>imageView</em> with the player's head shot and a <em>textView</em> with the player's name.</p>
+
+<pre><code>@Override
+public View getView(int i, View view, ViewGroup viewGroup) {
+    LayoutInflater li = LayoutInflater.from(getContext());
+    View playerItem = li.inflate(R.layout.player_item, null, false);
+    ImageView photoView = (ImageView) playerItem.findViewById(R.id.imageView);
+    TextView nameView = (TextView) playerItem.findViewById(R.id.name);
+
+    AppacitiveObject player = getItem(i);
+    String playerName = player.getPropertyAsString("name");
+    String photoUrl = player.getPropertyAsString("photo_url");
+
+    nameView.setText(playerName);
+    Picasso.with(getContext())
+        .load(photoUrl)
+        .placeholder(R.drawable.placeholder)
+        .into(photoView);
+
+    return playerItem;
+}
+</code></pre>
+
+<p>And finally just attach your <em>AppacitiveObjectQueryAdapter</em> to your <em>listView</em> with your desired <em>AppacitiveQuery</em>.</p>
+
+<pre><code>    AppacitiveQuery query = new AppacitiveQuery();
+    query.pageNumber = 1;
+    query.pageSize = 5;
+    query.filter = new PropertyFilter("team").isEqualTo("India");
+    List&lt;String&gt; fields = null;
+    //  Tell the adapter to fire this query on the 'player' schema type.
+    AppacitiveObjectQueryAdapter mAdapter = new AppacitiveObjectQueryAdapter(this, "player", fields, query);
+    mListView.setAdapter(mAdapter);
+</code></pre>
+
+<p>The next and previous button click listeners are programmed to instruct the adapter to fetch the next of previous batch of players respectively.</p>
+
+<pre><code>    mNextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mAdapter.getNextPage();
+            }
+        });
+</code></pre>
+
+<h2>
+<a name="screenshot" class="anchor" href="#screenshot"><span class="octicon octicon-link"></span></a>Screenshot</h2>
+
+<p><img src="https://raw.github.com/sathley/AdapterSample/master/screenshot.png" alt="screenshot"></p>
+
+<p><strong>Footnote</strong> :
+This example depends on <a href="https://github.com/appacitive/appacitive-sdk-core">appacitive android sdk</a> and the amazing image downloading and caching library <a href="http://square.github.io/picasso/">picasso</a> by Square.</p>
+        </section>
+
+        <footer>
+          Appacitive QueryAdapter Sample is maintained by <a href="https://github.com/sathley">sathley</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
